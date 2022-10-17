@@ -396,3 +396,8 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+/backend/data/Takeout
+/backend/data/Sources
+.DS_Store
+
+.env
