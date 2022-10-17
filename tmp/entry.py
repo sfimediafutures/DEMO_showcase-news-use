@@ -4,90 +4,123 @@ import numpy as np
 import re
 import json
 import time
+from datetime import datetime
 
-class SessionString:
-    def __init__(self, item_id: int, usec: int, timespan = 5):
-        self.id = item_id
-        self.usec = usec
+class SessionList:
+    def __init__(self, head = None, tail = None, timespan = 5):
+        self.head = head
+        self.tail = None
         self.timespan = timespan
 
         self.top = self.timespan * 60000000
         self.bottom = -(self.timespan * 60000000)
+    
+        self.count = 0
 
-        # data sctructure points
+    # takes tupe (id, usec)
+    def insert(self, data):
+        new_node = SessionNode(data[0], data[1])
+
+        if not self.head:
+            self.head = new_node
+            self.count += 1
+            print('Head')
+            return True
+
+        else:
+            difference = self.head.usec - new_node.usec
+            if difference < self.top and difference > self.bottom: # DIFFERENCE = 0 ?????
+                self.add(new_node)
+                self.count += 1
+
+                if difference > 0:
+                    self.top += difference
+                else:
+                    self.bottom -= difference
+                return True
+            else:
+                return False
+
+    def add(self, new_node):
+        if self.head.usec < new_node.usec:
+            self.head.set_after(new_node)
+        else:
+            new_node.set_after(self.head)
+            self.head = new_node
+        return
+
+    def show(self):
+        values = []
+        item = self.head
+        while item.get_after():
+            values.append(item.get_data())
+            item = item.get_after()
+        # as while loop above will not append the tail node, we add:
+        values.append(item.get_data())
+        return values
+
+class SessionNode:
+    def __init__(self, item_id: int, usec: int):        
+        self.id = item_id
+        self.usec = usec
+
         self.before = None
         self.after = None
+
+    def get_data(self):
+        return (self.id, self.usec)
+      
+    def set_data(self, item_id, usec):
+        self.id = item_id
+        self.usec = usec
         
+    def get_after(self):
+        return self.after
 
-    # This will always be called on head, which is the first object timewise
-    def add(self, new_entry: object):
-        difference = self.usec - new_entry.usec
-        if difference < self.top and difference > self.bottom:
-            print(show_time(a))
-            print(show_time(b))
-            print(f'Within {self.timespan} mins!')
-            self.place(new_entry, difference)
-            return True
+    def set_after(self, after):
+        self.after = after
+      
+
+    def get_before(self):
+        return self.before
+ 
+    def set_before(self, before):
+        self.before = before
+
+
+def run():
+    data = 'cleaned_history_.json'
+    unprocessed_data = pd.read_json(data)
+
+    unprocessed_data = unprocessed_data.reset_index()
+    unprocessed_data = unprocessed_data.rename(columns={"index":"id"})
+
+    data = [(src, dst) for src, dst in zip(unprocessed_data['id'], unprocessed_data['time_usec'])]
+
+
+    sessions = []
+    for entry in data:
+        i = 0
+        # cold start
+        if len(sessions) == 0:
+            data_list = SessionList()
+            data_list.insert(entry)
+            sessions.append(data_list)
         else:
-            print(show_time(a))
-            print(show_time(b))
-            print('Not Within mins!', difference / 60000000, 'minutes apart.')
-            return False
-
-
-    def place(self, new_entry: object, difference: int):
-        head = self
-        # if difference is less than 0, set new head.
-        if difference < 0:
-            # add 
-            head.before = new_entry
-            new_entry.after = head
-            # add difference to bottom (maximum allowed time)
-            new_entry.bottom = head.bottom - difference
-            self = new_entry
-
-        # if difference is positive, we will not replace head, but we will add to tail.
-        else:
-            item = head
-            before = None
-            # go to after untill either item is null (we reached tail)
-            # or fix after.
-            while item.after:
-
-                if item.usec < new_entry.usec:
-                    # if we're at tail:
-                    item = item.after
-                
-                else: 
-                    # place
-                    before = item.before
-
-                    new_entry.before = before
-                    before.after = new_entry
-                    new_entry.after = item
-                    item.before = new_entry
+            data_list = sessions[i]
+            while not data_list.insert(entry): # While im False
+                i += 1
+                if i + 1 > len(sessions): # End of line, create new.
+                    data_list = SessionList()
+                    data_list.insert(entry)
+                    sessions.append(data_list)
                     break
-            
-            # if while loop ran out due to no after:
-            if not item.after:
-                head.bottom += difference
-                item.after = new_entry
-                new_entry.before = item
+                else:
+                    data_list = sessions[i]
 
-    def as_list(self):
-        values = []
-        # go to first item
-        head = self.get_head()
-        
-        # iterate and grab all entries
-        while head.after:
-            values.append((head.id, head.usec))
-            head = head.after
+    for l in sessions:
+        print(l.show())
 
-        return values
-        
-    def get_head(self):
-        head = self
-        while head.before:
-            head = head.before
-        return head
+if __name__ == '__main__':
+    run()
+
