@@ -24,7 +24,6 @@ class SessionList:
         if not self.head:
             self.head = new_node
             self.count += 1
-            print('Head')
             return True
 
         else:
@@ -49,7 +48,7 @@ class SessionList:
             self.head = new_node
         return
 
-    def show(self):
+    def as_list(self):
         values = []
         item = self.head
         while item.get_after():
@@ -99,6 +98,7 @@ def run():
 
 
     sessions = []
+    y = 0
     for entry in data:
         i = 0
         # cold start
@@ -117,7 +117,8 @@ def run():
                     break
                 else:
                     data_list = sessions[i]
-
+        y += 1
+        print(y, ' / ', len(data))
     for l in sessions:
         print(l.show())
 

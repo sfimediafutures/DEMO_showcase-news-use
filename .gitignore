@@ -398,6 +398,8 @@ FodyWeavers.xsd
 *.sln.iml
 /backend/data/Takeout
 /backend/data/Sources
+/backend/data/user_data
 .DS_Store
 
 .env
+/backend/data/user_data/
