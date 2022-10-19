@@ -87,41 +87,38 @@ class SessionNode:
         self.before = before
 
 
-def run():
-    data = 'cleaned_history_.json'
-    unprocessed_data = pd.read_json(data)
+def session_history(data):
+    try:
+        unprocessed_data = pd.read_json(data)
 
-    unprocessed_data = unprocessed_data.reset_index()
-    unprocessed_data = unprocessed_data.rename(columns={"index":"id"})
+        unprocessed_data = unprocessed_data.reset_index()
+        unprocessed_data = unprocessed_data.rename(columns={"index":"id"})
 
-    data = [(src, dst) for src, dst in zip(unprocessed_data['id'], unprocessed_data['time_usec'])]
+        data = [(src, dst) for src, dst in zip(unprocessed_data['id'], unprocessed_data['time_usec'])]
 
+        sessions = []
+        y = 0
+        for entry in data:
+            i = 0
+            # cold start
+            if len(sessions) == 0:
+                data_list = SessionList()
+                data_list.insert(entry)
+                sessions.append(data_list)
+            else:
+                data_list = sessions[i]
+                while not data_list.insert(entry): # While im False
+                    i += 1
+                    if i + 1 > len(sessions): # End of line, create new.
+                        data_list = SessionList()
+                        data_list.insert(entry)
+                        sessions.append(data_list)
+                        break
+                    else:
+                        data_list = sessions[i]
+            y += 1
+            print(y, ' / ', len(data))
 
-    sessions = []
-    y = 0
-    for entry in data:
-        i = 0
-        # cold start
-        if len(sessions) == 0:
-            data_list = SessionList()
-            data_list.insert(entry)
-            sessions.append(data_list)
-        else:
-            data_list = sessions[i]
-            while not data_list.insert(entry): # While im False
-                i += 1
-                if i + 1 > len(sessions): # End of line, create new.
-                    data_list = SessionList()
-                    data_list.insert(entry)
-                    sessions.append(data_list)
-                    break
-                else:
-                    data_list = sessions[i]
-        y += 1
-        print(y, ' / ', len(data))
-    for l in sessions:
-        print(l.show())
-
-if __name__ == '__main__':
-    run()
-
+        return sessions
+    except Exception as e:
+        print(e)
