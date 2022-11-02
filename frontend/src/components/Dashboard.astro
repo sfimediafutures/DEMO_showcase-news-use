@@ -1,0 +1,799 @@
+---
+export interface Props {
+    title?: string
+    headerColor?: string
+    url? : StaticRange
+}
+
+---
+<script src="https://code.highcharts.com/highcharts.js" is:inline></script>
+<script src="https://code.highcharts.com/highcharts-more.js" is:inline></script>
+<script src="https://code.highcharts.com/modules/heatmap.js" is:inline></script>
+<script src="https://code.highcharts.com/modules/data.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js" is:inline></script>
+<script src="https://code.highcharts.com/modules/export-data.js" is:inline></script>
+<script src="https://code.highcharts.com/modules/accessibility.js" is:inline></script>
+
+<!-- <script src="/js/highcharts.js" is:inline defer></script> 
+<script src="/js/highcharts-more.js" is:inline></script>  -->
+<div class="container">
+
+<div class="cont1">
+    <div class="contheader">
+        <h5>Bruker spesifikk ID</h5>
+    </div>
+    <div class="sep_horizontal"></div>
+    <ul class="users" id='users'>
+
+    </ul>
+</div>
+
+<div class="sep_vertical"></div>
+
+<div class="cont2">
+    <div class="contheader">
+        <h5>Calendar Overview</h5>
+        <h5>Session Preview</h5>
+        <h5>Overall News Usage</h5>
+    </div>
+    <div class="sep_horizontal"></div>
+    <div id="hscontainer" style="width:100%; height:400px;"></div>
+</div>
+
+<div class="sep_vertical"></div>
+
+<div class="cont3">
+    <div class="contheader">
+        <button class="contheader-button-day">
+            Dag
+        </button>
+        <button class="contheader-button-articles">
+            Artikler
+        </button>
+    </div>
+    <div class="sep_horizontal"></div>
+
+    <div class="cont3_views">
+    <div class="cont3_overall">
+        <!-- Im dynamicly filled -->
+        <h5>Overview</h5>
+        <figure class="highcharts-figure">
+            <div id="container3"></div>
+            <p class="highcharts-description">
+                Figur som viser de forskjellige kildene per dag
+            </p>
+        </figure>
+        
+        <div class="total_articles">
+            <h5>Total mengde artikler</h5>
+        </div>
+        <figure class="highcharts-figure">
+            <div id="container4"></div>
+            <p class="highcharts-description">
+                Figur som viser forholdet mellom Forside og dybde artikler
+            </p>
+        </figure>
+        <h5>Time</h5>
+
+        <figure class="highcharts-figure">
+            <div id="container5"></div>
+            <p class="highcharts-description">
+                Figur som viser "Sessoins" i løpet av en dag
+            </p>
+        </figure>
+    </div>
+    <div class="cont3_days hidden">
+        <!-- Im dynamicly updated -->
+        <p>days</p>
+    </div>
+    </div>
+</div>
+</div>
+
+<style>
+
+    .users {
+        max-height: 80%;
+        list-style: none;
+        overflow: scroll;
+    }
+
+    .users > li {
+        cursor: pointer;
+    }
+    .container {
+    background: rgba(254, 254, 254, 0.7);
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: row;
+    margin: 1rem;
+    height: 800px;
+
+    }
+    h5 {
+        font-weight: 300;
+    }
+    .cont1 {
+        width: 10%;
+
+    }
+    .cont2 {
+        width: 60%;
+        
+    }
+    .cont3 {
+        width: 30%;
+    }
+
+    .cont3_views {
+        height: 90%;
+        overflow: scroll;
+    }
+
+    .cont3 > .highcharts-figure {
+        padding: 0;
+        margin: 0;
+    }
+    .cont3_days {
+        position: absolute;
+    }
+    .cont3_overall {
+        position: absolute;
+        height: 70%;
+        overflow: scroll;
+    }
+    .contheader {
+        display: flex;
+        flex-direction: row;
+        margin: 0 0 0 .5rem;
+        justify-content: left;
+    }
+
+    .contheader > button {
+        all: unset;
+        cursor: pointer;
+        margin: 1rem 1rem 1rem 0;
+        font-weight: 300;
+        font-size: 12px;
+    }
+
+    .contheader > button:active > h5{
+        text-decoration: underline;
+    }
+    
+    .sep_vertical {
+        width: 1px;
+        background-color: #CACACA;
+        margin: .5rem 0 .5rem 0;
+    }
+
+    .sep_horizontal {
+        height: 1px;
+        background-color: #CACACA;
+        margin: 0 .5rem 0 .5rem;
+    }
+    #container {
+        height: 600px;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .total_articles {
+        
+    }
+    .cont3 h5 {
+        font-size: 20px;
+        padding: .5rem;
+    }
+
+
+
+</style>
+
+<style is:inline>
+    .daycolumn {
+        background: rgba(254, 254, 254, 0.7);
+        box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.2);
+        border-radius: 2px;
+        margin: .2rem 0 .2rem;
+        padding: .2rem .2rem .2rem .2rem;
+    }
+
+    .daycolumn > p {
+        margin: 0 0 .2rem 0;
+        font-family: 'Lora', serif;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .picked {
+        text-decoration: underline;
+    }
+</style>
+<script is:inline>
+    // initial get_users
+    let userData
+    async function main(){
+
+        await get_user_list()
+    }
+
+    // Event listener to update graph based on users.
+
+
+
+    
+    // ========================== BRUKER SPESIFIKK ID ==========================
+
+    let active_user
+
+    async function get_user_list() {
+        const users = await getAllUseres()
+
+        // here we can make it dynamic by running oldChild and .replaceChild rather than .appendChild.
+        //let oldChild
+
+        console.log(users)
+        const usercolum = document.getElementById('users')
+        var documentFragment = document.createDocumentFragment();
+    
+        users.forEach(element => {
+            const li = document.createElement('li');
+            li.classList.add('userid')
+            li.textContent = element.user_id
+            li.style.cursor = "pointer"
+            documentFragment.append(li)
+            
+        });
+        usercolum.appendChild(documentFragment)
+
+    }
+
+    // Changing The Active User Id
+    document.addEventListener("click", function(e) {
+        if (e.target && e.target.matches('li.userid')) {
+            active_user = e.target.textContent
+            updateCal(e.target.textContent)
+        }
+        else if (e.target && e.target.matches('button.contheader-button-day')) {
+            console.log('HIT DAG')
+            showDay(e.target)
+        }
+        else if (e.target && e.target.matches('button.contheader-button-articles')) {
+            console.log('HIT ARTIKLER')
+            showArticles(e.target)
+        }
+    });
+
+
+    // ========================== API CALL FUNCTIONS ==========================
+    async function getAllUseres() {
+        const response = await fetch('http://0.0.0.0/api/users')
+        return response.json()
+    
+    }
+    async function getUserContentDay(userid, day) {
+        const response = await fetch(`http://0.0.0.0/api/date/${userid}/${day[0]+ '-' + day[1]}`)
+        return response.json()
+    }
+
+    // get cal day
+    async function getUserContentCal(userid) {
+        const user_data = await fetch(`http://0.0.0.0/api/range_date_cal/${userid}/2022-09-01_2022-09-30`)
+        return user_data.json()
+    }
+
+    async function getDetailedDay(userid, day) {
+        //0.0.0.0/api/date_details/66310/37-0
+        const response = await fetch(`http://0.0.0.0/api/date_details/${userid}/${day[0]+ '-' + day[1]}`)
+        return response.json()
+    }
+    // ========================== MONTH VIEW ==========================
+
+    let chart; // globally available
+    // initial data
+    let High_Data =  [
+            [0, 1, 19, 33], [0, 2, 8], [0, 3, 24], [0, 4, 67], 
+            [1, 1, 58], [1, 2, 78], [1, 3, 117], [1, 4, 48], 
+            [2, 1, 15], [2, 2, 123], [2, 3, 64], [2, 4, 52], 
+            [3, 0, 72], [3, 1, 132], [3, 2, 114], [3, 3, 19], [3, 4, 16], 
+            [4, 0, 38], [4, 1, 5], [4, 2, 8], [4, 3, 117], [4, 4, 115], 
+            [5, 0, 88], [5, 1, 32], [5, 2, 12], [5, 3, 6], 
+            [6, 0, 13], [6, 1, 44], [6, 2, 88], [6, 3, 98]]
+
+    
+    // Function to update cal based on userid
+    async function updateCal(userid) {
+        const data = await getUserContentCal(userid)
+        console.log(data)
+        chart.series[0].update({data:data},redraw=true);
+    }
+
+
+    // Content
+    document.addEventListener('DOMContentLoaded', function () {
+        main()
+
+        
+        function getPointCategoryName(point, dimension) {
+            //console.log('1',point, dimension)
+            var series = point.series,
+            isY = dimension === 'y',
+            axis = series[isY ? 'yAxis' : 'xAxis'];
+            //return axis.categories[point[isY ? 'y' : 'x']];
+            return 'Week 1'
+        }
+
+        
+        chart = new Highcharts.chart('hscontainer', {
+
+        chart: {
+            renderTo: 'hscontainer',
+            type: 'heatmap',
+            marginTop: 50,
+            marginBottom: 30,
+            plotBorderWidth: 1,
+            // events: {
+            //     click: function() {
+            //         alert ('Category: '+ this.category +', value: '+ this.y);
+            //     }
+        //},
+
+        },
+        title: {
+            text: 'News use during the month of'
+        },
+
+        xAxis: {
+            categories: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday','Sunday']
+        },
+
+        yAxis: {
+            categories: ['Week 35', 'Week 36', 'Week 37', 'Week 38', 'Week 39'],
+            title: null,
+            reversed: true
+        },
+
+        accessibility: {
+            point: {
+                descriptionFormatter: function (point) {
+                    var ix = point.index + 1,
+                        xName = getPointCategoryName(point, 'x'),
+                        yName = getPointCategoryName(point, 'y'),
+                        val = point.value;
+                    return ix + '. ' + xName + ' sales ' + yName + ', ' + val + '.';
+                }
+            }
+        },
+
+        colorAxis: {
+            min: 0,
+            minColor: '#FFFFFF',
+            maxColor: Highcharts.getOptions().colors[0]
+        },
+
+        legend: {
+            align: 'right',
+            layout: 'vertical',
+            margin: 0,
+            verticalAlign: 'top',
+            y: 25,
+            symbolHeight: 280
+        },
+
+        tooltip: {
+            formatter: function () {
+                return '<b>' + getPointCategoryName(this.point, 'x') + '</b> read <br><b>' +
+                    this.point.value + '</b> items on <br><b>' + getPointCategoryName(this.point, 'y') + '</b>';
+            }
+        },
+
+        series: [{
+                name: 'Twice',
+                borderWidth: 1,
+                data: High_Data,
+                dataLabels: {
+                    enabled: true,
+                    align: 'left',
+                    color: '#000000',
+                    y: 20,
+                    x: 10
+                }
+            }],
+    
+        plotOptions: {
+            series: {
+                cursor: 'pointer',
+                point: {
+                    events: {
+                        click: function () {
+                            updateDay([this.y, this.x]);
+                        }
+                    }
+                }
+            }
+        },
+
+        responsive: {
+            rules: [{
+                condition: {
+                    maxWidth: 500
+                },
+                chartOptions: {
+                    yAxis: {
+                        labels: {
+                            formatter: function () {
+                                return this.value.charAt(0);
+                            }
+                        }
+                    }
+                }
+            }]
+        }
+
+        });
+    
+
+    });
+
+
+    // ========================== DAY VIEW ==========================
+    let dayview_state
+    let overallview_state
+    let oldChild
+    let chart2
+
+    // Functions for sub menu called by eventlistener
+    function showDay(e) {
+        const overallview = document.getElementsByClassName('cont3_overall')[0]
+        const dayview = document.getElementsByClassName('cont3_days')[0]
+        dayview.classList.add('hidden')
+        dayview_state = 'hidden'
+        overallview.classList.remove('hidden')
+        overallview_state = 'visible'
+        console.log(dayview)
+    }
+
+    function showArticles(e) {
+        const dayview = document.getElementsByClassName('cont3_days')[0]
+        const overallview = document.getElementsByClassName('cont3_overall')[0]
+        dayview.classList.remove('hidden')
+        dayview_state = 'visible'
+        overallview.classList.add('hidden')
+        overallview_state = 'hidden'
+        console.log(overallview)
+    }
+
+    // Fill Days View
+    var daydata1 = [
+            [Date.UTC(2010, 0, 1), 10],
+            [Date.UTC(2010, 2, 1), 5],
+            [Date.UTC(2010, 3, 1), 10]
+        ] 
+
+    // let daydata = [{name: '1:00', y: 4, drilldown: '1:00'}, {name: '2:00', y: 0, drilldown: '2:00'}, {name: '3:00', y: 10, drilldown: '3:00'}, {name: '4:00', y: 0, drilldown: '4:00'}, {name: '5:00', y: 8, drilldown: '5:00'}, {name: '6:00', y: 9, drilldown: '6:00'}, {name: '7:00', y: 8, drilldown: '7:00'}, {name: '8:00', y: 7, drilldown: '8:00'}, {name: '9:00', y: 11, drilldown: '9:00'}, {name: '10:00', y: 9, drilldown: '10:00'}, {name: '11:00', y: 7, drilldown: '11:00'}, {name: '12:00', y: 6, drilldown: '12:00'}, {name: '13:00', y: 9, drilldown: '13:00'}, {name: '14:00', y: 3, drilldown: '14:00'}, {name: '15:00', y: 0, drilldown: '15:00'}, {name: '16:00', y: 10, drilldown: '16:00'}, {name: '17:00', y: 4, drilldown: '17:00'}, {name: '18:00', y: 0, drilldown: '18:00'}, {name: '19:00', y: 8, drilldown: '19:00'}, {name: '20:00', y: 1, drilldown: '20:00'}, {name: '21:00', y: 5, drilldown: '21:00'}, {name: '22:00', y: 0, drilldown: '22:00'}, {name: '23:00', y: 9, drilldown: '23:00'}, {name: '24:00', y: 9, drilldown: '24:00'}]
+    // let drilldowndata = [{name: '0:00', id: '0:00', data: [['0:01', 3], ['0:02', 7], ['0:03', 8], ['0:04', 9], ['0:05', 1], ['0:06', 6], ['0:07', 8], ['0:08', 1], ['0:09', 4], ['0:10', 4], ['0:11', 5], ['0:12', 3], ['0:13', 11], ['0:14', 8], ['0:15', 1], ['0:16', 10], ['0:17', 1], ['0:18', 10], ['0:19', 0], ['0:20', 9], ['0:21', 9], ['0:22', 1], ['0:23', 8], ['0:24', 1], ['0:25', 7], ['0:26', 11], ['0:27', 1], ['0:28', 7], ['0:29', 11], ['0:30', 11], ['0:31', 4], ['0:32', 8], ['0:33', 9], ['0:34', 11], ['0:35', 5], ['0:36', 4], ['0:37', 4], ['0:38', 11], ['0:39', 3], ['0:40', 3], ['0:41', 11], ['0:42', 3], ['0:43', 1], ['0:44', 5], ['0:45', 5], ['0:46', 6], ['0:47', 7], ['0:48', 11], ['0:49', 3], ['0:50', 7], ['0:51', 5], ['0:52', 7], ['0:53', 7], ['0:54', 8], ['0:55', 7], ['0:56', 9], ['0:57', 6], ['0:58', 7], ['0:59', 4], ['0:60', 4]]}, {name: '1:00', id: '1:00', data: [['1:01', 6], ['1:02', 9], ['1:03', 1], ['1:04', 8], ['1:05', 6], ['1:06', 0], ['1:07', 11], ['1:08', 1], ['1:09', 10], ['1:10', 11], ['1:11', 7], ['1:12', 7], ['1:13', 3], ['1:14', 8], ['1:15', 5], ['1:16', 5], ['1:17', 8], ['1:18', 7], ['1:19', 6], ['1:20', 11], ['1:21', 10], ['1:22', 7], ['1:23', 10], ['1:24', 3], ['1:25', 3], ['1:26', 9], ['1:27', 0], ['1:28', 7], ['1:29', 11], ['1:30', 6], ['1:31', 7], ['1:32', 8], ['1:33', 1], ['1:34', 8], ['1:35', 1], ['1:36', 1], ['1:37', 5], ['1:38', 2], ['1:39', 6], ['1:40', 4], ['1:41', 3], ['1:42', 4], ['1:43', 4], ['1:44', 8], ['1:45', 1], ['1:46', 7], ['1:47', 1], ['1:48', 3], ['1:49', 0], ['1:50', 7], ['1:51', 8], ['1:52', 7], ['1:53', 5], ['1:54', 2], ['1:55', 10], ['1:56', 1], ['1:57', 6], ['1:58', 1], ['1:59', 9], ['1:60', 2]]}, {name: '2:00', id: '2:00', data: [['2:01', 0], ['2:02', 8], ['2:03', 8], ['2:04', 0], ['2:05', 5], ['2:06', 10], ['2:07', 8], ['2:08', 4], ['2:09', 7], ['2:10', 10], ['2:11', 11], ['2:12', 6], ['2:13', 0], ['2:14', 3], ['2:15', 6], ['2:16', 9], ['2:17', 9], ['2:18', 1], ['2:19', 3], ['2:20', 6], ['2:21', 6], ['2:22', 0], ['2:23', 3], ['2:24', 11], ['2:25', 7], ['2:26', 5], ['2:27', 3], ['2:28', 8], ['2:29', 1], ['2:30', 6], ['2:31', 1], ['2:32', 11], ['2:33', 3], ['2:34', 6], ['2:35', 6], ['2:36', 10], ['2:37', 5], ['2:38', 10], ['2:39', 4], ['2:40', 10], ['2:41', 5], ['2:42', 11], ['2:43', 1], ['2:44', 7], ['2:45', 5], ['2:46', 8], ['2:47', 4], ['2:48', 2], ['2:49', 8], ['2:50', 10], ['2:51', 4], ['2:52', 3], ['2:53', 2], ['2:54', 6], ['2:55', 4], ['2:56', 10], ['2:57', 5], ['2:58', 4], ['2:59', 1], ['2:60', 5]]}, {name: '3:00', id: '3:00', data: [['3:01', 2], ['3:02', 7], ['3:03', 6], ['3:04', 8], ['3:05', 4], ['3:06', 2], ['3:07', 6], ['3:08', 1], ['3:09', 4], ['3:10', 4], ['3:11', 9], ['3:12', 2], ['3:13', 5], ['3:14', 2], ['3:15', 9], ['3:16', 10], ['3:17', 5], ['3:18', 7], ['3:19', 3], ['3:20', 11], ['3:21', 11], ['3:22', 4], ['3:23', 5], ['3:24', 4], ['3:25', 9], ['3:26', 3], ['3:27', 10], ['3:28', 9], ['3:29', 8], ['3:30', 9], ['3:31', 3], ['3:32', 6], ['3:33', 11], ['3:34', 1], ['3:35', 5], ['3:36', 10], ['3:37', 0], ['3:38', 1], ['3:39', 8], ['3:40', 1], ['3:41', 5], ['3:42', 8], ['3:43', 7], ['3:44', 8], ['3:45', 3], ['3:46', 11], ['3:47', 9], ['3:48', 5], ['3:49', 6], ['3:50', 8], ['3:51', 6], ['3:52', 3], ['3:53', 1], ['3:54', 6], ['3:55', 7], ['3:56', 2], ['3:57', 4], ['3:58', 3], ['3:59', 4], ['3:60', 7]]}]
+    async function updateDay(day){
+
+            const data = await getUserContentDay(userid = active_user, day = day)
+            const detaiedData = await getDetailedDay(userid = active_user, day = day)
+            // update full View: 
+            // var articles = []
+            // data.forEach(element => {
+            //     const time = new Highcharts.Time();
+            //     const s = time.dateFormat('%Y-%m-%d %H', new Date(element.usec));
+
+            //     articles.push([s, 1])
+            //     console.log(new Date(element.usec))
+            // })
+            // console.log('ARTICLES', articles)
+            //chart2.update({ drilldown: { series: drilldowndata });
+            //chart2.series[0].update({data:daydata},redraw=true);
+            
+            // chart2.options.drilldown.series[0].update({data:drilldowndata},redraw=true);
+            
+            // Update Pie
+            chart2.series[0].update({data:detaiedData.pie},redraw=true);
+
+
+            // Update Forside
+            chart3.series[0].update({data:[detaiedData.forside_artikkel[0]]});
+            chart3.series[1].update({data:[detaiedData.forside_artikkel[1]]}, redraw=true);
+            
+            // Update Sessions
+            console.log('SESSOINS',detaiedData.sessions)
+            chart4.series[0].update({data:detaiedData.sessions}, redraw=true);
+            // Update N articles
+
+            // update article view
+            const daycolumn = document.getElementsByClassName('cont3_views')[0]
+            const daycolumn_cont = document.getElementsByClassName('cont3_days')[0]
+
+            var documentFragment = document.createDocumentFragment();
+
+            data.forEach(element => {
+                const div = document.createElement('div');
+                div.classList.add('daycolumn')
+
+                var source = document.createElement('h5')
+                source.textContent = element.source
+                div.appendChild(source)
+                // build items
+                var url = document.createElement('p')
+                url.textContent = element.url
+                div.appendChild(url)
+
+                var usec = document.createElement('p')
+                usec.textContent = element.usec
+                div.appendChild(usec)
+
+            
+                div.style.cursor = "pointer"
+                documentFragment.append(div)
+                
+            });
+            
+            if (!oldChild) {
+                console.log('No oldchild')
+
+                daycolumn_cont.appendChild(documentFragment)
+                daycolumn.appendChild(daycolumn_cont)
+                oldChild = daycolumn_cont
+            }
+            
+            else {
+                console.log('OldChild!')
+                new_cont = document.createElement('div')
+                new_cont.classList.add('cont3_days')
+                new_cont.classList.add(dayview_state)
+                new_cont.appendChild(documentFragment)
+                daycolumn.replaceChild(new_cont, oldChild)
+                oldChild = new_cont
+            }
+            
+
+
+            
+            console.log(data)
+        };
+
+        // Data retrieved from https://gs.statcounter.com/browser-market-share#monthly-202201-202201-bar
+
+        // Create the chart
+    
+        chart2 = new Highcharts.chart('container3', {
+            chart: {
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false,
+                type: 'pie'
+            },
+            title: {
+                text: ''
+            },
+            tooltip: {
+                pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+            },
+            accessibility: {
+                point: {
+                    valueSuffix: '%'
+                }
+            },
+            plotOptions: {
+                pie: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    dataLabels: {
+                        enabled: false
+                    },
+                    showInLegend: true
+                }
+            },
+            series: [{
+                name: 'Brands',
+                colorByPoint: true,
+                data: [{
+                    name: 'Chrome',
+                    y: 74.77,
+                    sliced: true,
+                    selected: true
+                },  {
+                    name: 'Edge',
+                    y: 12.82
+                },  {
+                    name: 'Firefox',
+                    y: 4.63
+                }, {
+                    name: 'Safari',
+                    y: 2.44
+                }, {
+                    name: 'Internet Explorer',
+                    y: 2.02
+                }, {
+                    name: 'Other',
+                    y: 3.28
+                }]
+            }]
+        });
+    chart3 = new Highcharts.chart('container4', {
+        chart: {
+            type: 'column'
+        },
+        title: {
+            text: '',
+            align: 'left'
+        },
+        xAxis: {
+            categories: ['Article']
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: 'Count trophies'
+            },
+            stackLabels: {
+                enabled: true,
+                style: {
+                    fontWeight: 'bold',
+                    color: ( // theme
+                        Highcharts.defaultOptions.title.style &&
+                        Highcharts.defaultOptions.title.style.color
+                    ) || 'gray',
+                    textOutline: 'none'
+                }
+            }
+        },
+        legend: {
+            align: 'left',
+            x: 0,
+            verticalAlign: 'bottom',
+            y: 15,
+            floating: true,
+            backgroundColor:
+                Highcharts.defaultOptions.legend.backgroundColor || 'white',
+            borderColor: '#CCC',
+            borderWidth: 1,
+            shadow: false
+        },
+        tooltip: {
+            headerFormat: '<b>{point.x}</b><br/>',
+            pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
+        },
+        plotOptions: {
+            column: {
+                stacking: 'normal',
+                dataLabels: {
+                    enabled: true
+                }
+            }
+        },
+        series: [{
+            name: 'Fremside',
+            data: [3]
+        }, {
+            name: 'Artikler',
+            data: [4]
+        }]
+    });
+
+
+    chart4 = new Highcharts.chart('container5', {
+
+        chart: {
+            type: 'columnrange',
+            inverted: true
+        },
+
+        accessibility: {
+            description: 'Figur som viser \" Sessoins \" i løpet av en dag'
+        },
+
+        title: {
+            text: 'Time usage'
+        },
+
+        xAxis: {
+            categories: []
+        },
+
+        yAxis: {
+            title: {
+                text: 'Hour of the day'
+            }
+        },
+
+        tooltip: {
+            valueSuffix: '{value}'
+        },
+
+        plotOptions: {
+            columnrange: {
+                dataLabels: {
+                    enabled: true,
+                    format: '{y}'
+                }
+            }
+        },
+
+        legend: {
+            enabled: true
+        },
+
+        series: [{
+            name: 'Sessions',
+            data:[
+                [
+                    22.26,
+                    22.26
+                ],
+                [
+                    22.5,
+                    22.6
+                ],
+                [
+                    21.91,
+                    21.91
+                ],
+                [
+                    14.9,
+                    14.9
+                ],
+                [
+                    14.8,
+                    14.8
+                ],
+                [
+                    11.25,
+                    11.16
+                ],
+                [
+                    7.16,
+                    7.16
+                ],
+                [
+                    6.88,
+                    6.88
+                ],
+                [
+                    6.73,
+                    6.68
+                ],
+                [
+                    6.1,
+                    6.1
+                ],
+                [
+                    5.3,
+                    5.3
+                ],
+                [
+                    4.66,
+                    4.66
+                ],
+                [
+                    14.2,
+                    15.7
+                ],
+                [
+                    11.23,
+                    11.25
+                ],
+                [
+                    23.58,
+                    23.58
+                ],
+                [
+                    5.68,
+                    5.68
+                ]
+                ]
+        }]
+
+        });
+
+
+</script>
+
