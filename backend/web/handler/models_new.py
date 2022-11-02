@@ -5,24 +5,12 @@ from django.db import models
 
 class User(models.Model):
     user_id = models.IntegerField()
-
-    def session(self):
-        self.session_set.all()
-        return session
-
-    def entry(self):
-        self.entry = self.entry_set.all()
-        return entry
-
+    session = models.ManyToManyField("handler.Session")
 
 class Session(models.Model):
     session_id = models.IntegerField()
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    total_time = models.IntegerField(default=0)
+    user = models.models.ManyToManyField("handler.User")
 
-    def entry(self):
-        self.entry = self.entry_set.all()
-        return self.entry
 
 class Entry(models.Model):
     entry_id = models.BigIntegerField()
@@ -33,11 +21,8 @@ class Entry(models.Model):
     client_id = models.CharField(max_length=100)
     source = models.CharField(max_length=100)
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    session = models.ForeignKey(
-        'handler.Session',
-        on_delete=models.CASCADE,
-        null=True
-    )
+
+    user = models.ManyToManyField("handler.User")
+    session = models.ManyToManyField("handler.Session", null=True)
 
 

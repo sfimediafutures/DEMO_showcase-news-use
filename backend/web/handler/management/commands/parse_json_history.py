@@ -58,23 +58,23 @@ class Command(BaseCommand):
         # Create Session Objects:
 
         # Add Sesssions
-        y = 0
-        x = 0
-        for session in sessions:
-            session_id = random.randint(10000, 99999)
-            new_session = Session.objects.create(session_id=session_id, user=user_id)
-            for entry in session:
-                try:
-                    related_entry = Entry.objects.get(entry_id=int(str(entry['id'])+str(user_id)))
-                    related_entry.session = new_session
-                    related_entry.save(update_fields=['session'])
-                    x += 1
-                except Entry.DoesNotExist:
-                    raise CommandError(f'Entry with entry_id {entry[0]} does not exist.')
-            y += 1
-
-        self.stdout.write(self.style.SUCCESS(
-             f'Added {y} sessions for user {user_id} containing {x} entries.'))
+        # y = 0
+        # x = 0
+        # for session in sessions:
+        #     session_id = random.randint(10000, 99999)
+        #     new_session = Session.objects.create(session_id=session_id, user=user_id)
+        #     for entry in session:
+        #         try:
+        #             related_entry = Entry.objects.get(entry_id=int(str(entry['id'])+str(user_id)))
+        #             related_entry.session = new_session
+        #             related_entry.save(update_fields=['session'])
+        #             x += 1
+        #         except Entry.DoesNotExist:
+        #             raise CommandError(f'Entry with entry_id {entry[0]} does not exist.')
+        #     y += 1
+        #
+        # self.stdout.write(self.style.SUCCESS(
+        #      f'Added {y} sessions for user {user_id} containing {x} entries.'))
 
         # Create Entries
         #{'id': 322,
@@ -88,41 +88,53 @@ class Command(BaseCommand):
         i = 0
         for entry in entries(options['root_data_folder'] + '/' + options['data']):
 
-            # try:
             new_entry = Entry.objects.create(entry_id=int(str(entry['id'])+str(user_id)),
                                              favicon=entry['favicon_url'],
                                              url=entry['url'],
                                              usec=self.__usec_ts(entry['time_usec']),
                                              page_transition=entry['page_transition'],
                                              client_id=entry['client_id'],
-                                             source=entry['link'])
-            try:
-                new_entry.user.add(User.objects.get(user_id=user_id).save())
-            except User.DoesNotExist:
-                raise CommandError(f'User with user_id {user_id} does not exist.')
+                                             source=entry['link'],
+                                             user=User.objects.get(user_id=user_id))
 
             i += 1
+            new_entry.save()
+            if i % 50 == 0:
+                self.stdout.write(self.style.SUCCESS(
+                         f'Added {i} entries for user {user_id}'))
             # except Exception as e:
             #     raise CommandError(f'Error ingesting {entry}', e)
 
         self.stdout.write(self.style.SUCCESS(
                      f'Added {i} entries for user {user_id}'))
-
+        #   new_entry = Entry.objects.create(entry_id=int(str(entry['id'])+str(user_id)),
         # Add Sesssions
         y = 0
         x = 0
+        session_length = len(sessions)
         for session in sessions:
             session_id = random.randint(10000, 99999)
-            new_session = Session.objects.create(session_id=session_id, user=user_id)
-            for entry in session:
+            new_session = Session.objects.create(session_id=session_id, user=User.objects.get(user_id=user_id), total_time = session.total_time)
+            for entry in session.as_list():
                 try:
-                    related_entry = Entry.objects.get(entry_id=int(str(entry['id'])+str(user_id)))
+                    related_entry = Entry.objects.get(entry_id=int(str(entry[0])+str(user_id)))
                     related_entry.session = new_session
                     related_entry.save(update_fields=['session'])
                     x += 1
+                    if x % 100 == 0:
+                        self.stdout.write(self.style.WARNING(
+                            f'Session {session_id} is long: processed {x}'))
+
                 except Entry.DoesNotExist:
                     raise CommandError(f'Entry with entry_id {entry[0]} does not exist.')
             y += 1
+            if session_length > 200:
+                if y % 50 == 0:
+                    self.stdout.write(self.style.SUCCESS(
+                     f'{y} / {session_length} processed'))
+            else:
+                self.stdout.write(self.style.SUCCESS(
+                     f'{y} / {session_length} processed'))
 
         self.stdout.write(self.style.SUCCESS(
              f'Added {y} sessions for user {user_id} containing {x} entries.'))

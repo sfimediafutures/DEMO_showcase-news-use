@@ -15,6 +15,8 @@ class SessionList:
         self.top = self.timespan * 60000000
         self.bottom = -(self.timespan * 60000000)
     
+        self.total_time = 0
+
         self.count = 0
 
     # takes tupe (id, usec)
@@ -36,7 +38,10 @@ class SessionList:
                     self.top += difference
                 else:
                     self.bottom -= difference
+                
+                #self.total_time = self.bottom - self.top
                 return True
+                
             else:
                 return False
 
