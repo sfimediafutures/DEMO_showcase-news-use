@@ -402,7 +402,7 @@ FodyWeavers.xsd
 .DS_Store
 
 .env
-/backend/data/user_data/
+
 # build output
 dist/
 
