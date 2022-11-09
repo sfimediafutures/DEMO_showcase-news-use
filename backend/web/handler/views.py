@@ -220,7 +220,8 @@ class EntryDateRangeUserCalFormat(APIView):
                     'x':days[d][0][1],
                     'y':days[d][0][2],
                     'value': len(days[d]),
-                    'name': f'Entry_{days[d][0][1]}-{days[d][0][2]}'
+                    'name': f'{d[-2:]}. September'
+                    #'name': f'Entry_{days[d][0][1]}-{days[d][0][2]}'
                 })
 
         # x = x axis, y = y axis, value = n articles that day, name = name.
