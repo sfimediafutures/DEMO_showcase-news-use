@@ -55,15 +55,17 @@ export interface Props {
 
     <div class="cont3_views">
     <div class="cont3_overall">
+        <h4 id="dayoverview">Oversikt 06/10/2022</h4>
+        <div class="sep_horizontal"></div>
         <!-- Im dynamicly filled -->
-        <h5>Overview</h5>
+        <h5>Kilder</h5>
         <figure class="highcharts-figure">
             <div id="container3"></div>
             <p class="highcharts-description">
                 Figur som viser de forskjellige kildene per dag
             </p>
         </figure>
-        
+        <div class="sep_horizontal"></div>
         <div class="total_articles">
             <h5>Total mengde artikler</h5>
         </div>
@@ -73,7 +75,8 @@ export interface Props {
                 Figur som viser forholdet mellom Forside og dybde artikler
             </p>
         </figure>
-        <h5>Time</h5>
+        <div class="sep_horizontal"></div>
+        <h5 id="totaltime">Total Tid: </h5>
 
         <figure class="highcharts-figure">
             <div id="container5"></div>
@@ -124,6 +127,8 @@ export interface Props {
     }
     .cont3 {
         width: 30%;
+        max-width: 30%;
+        min-width: 516;
     }
 
     .cont3_views {
@@ -142,6 +147,12 @@ export interface Props {
         position: absolute;
         height: 70%;
         overflow: scroll;
+        width: 29.5%;
+    }
+    .cont3_overall > h4 {
+        text-align: center;
+        font-size: 25px;
+        
     }
     .contheader {
         display: flex;
@@ -153,7 +164,7 @@ export interface Props {
     .contheader > button {
         all: unset;
         cursor: pointer;
-        margin: 1rem 1rem 1rem 0;
+        margin: 1.46rem 1rem 1.3rem 0;
         font-weight: 300;
         font-size: 12px;
     }
@@ -479,33 +490,24 @@ export interface Props {
     async function updateDay(day){
 
             const data = await getUserContentDay(userid = active_user, day = day)
-            const detaiedData = await getDetailedDay(userid = active_user, day = day)
-            // update full View: 
-            // var articles = []
-            // data.forEach(element => {
-            //     const time = new Highcharts.Time();
-            //     const s = time.dateFormat('%Y-%m-%d %H', new Date(element.usec));
+            const detailedData = await getDetailedDay(userid = active_user, day = day)
 
-            //     articles.push([s, 1])
-            //     console.log(new Date(element.usec))
-            // })
-            // console.log('ARTICLES', articles)
-            //chart2.update({ drilldown: { series: drilldowndata });
-            //chart2.series[0].update({data:daydata},redraw=true);
-            
-            // chart2.options.drilldown.series[0].update({data:drilldowndata},redraw=true);
-            
+            // Update Date:
+            document.getElementById('dayoverview')
+
+            // Update Total Time
+            document.getElementById('totaltime').textContent = `Total Tid:${detailedData.timespent}`
             // Update Pie
-            chart2.series[0].update({data:detaiedData.pie},redraw=true);
-
+            chart2.series[0].update({data:detailedData.pie},redraw=true);
 
             // Update Forside
-            chart3.series[0].update({data:[detaiedData.forside_artikkel[0]]});
-            chart3.series[1].update({data:[detaiedData.forside_artikkel[1]]}, redraw=true);
+            chart3.series[0].update({data:[detailedData.forside_artikkel[0]]});
+            chart3.series[1].update({data:[detailedData.forside_artikkel[1]]}, redraw=true);
             
             // Update Sessions
-            console.log('SESSOINS',detaiedData.sessions)
-            chart4.series[0].update({data:detaiedData.sessions}, redraw=true);
+            console.log('SESSOINS',detailedData.sessions)
+            console.log('TOTALTIME', detailedData.timespent)
+            chart4.series[0].update({data:detailedData.sessions}, redraw=true);
             // Update N articles
 
             // update article view
