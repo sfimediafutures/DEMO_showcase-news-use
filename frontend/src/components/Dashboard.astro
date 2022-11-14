@@ -111,14 +111,18 @@ export interface Props {
     display: flex;
     flex-direction: row;
     margin: 1rem;
-    height: 800px;
+    min-height: 700px;
 
+    }
+
+    #totaltime {
+        font-weight: bold;
     }
     h5 {
         font-weight: 300;
     }
     .cont1 {
-        width: 10%;
+        width: 15%;
 
     }
     .cont2 {
@@ -145,7 +149,7 @@ export interface Props {
     }
     .cont3_overall {
         position: absolute;
-        height: 90%;
+        height: 600px;
         overflow: scroll;
         width: 29.5%;
     }
@@ -493,7 +497,7 @@ export interface Props {
             document.getElementById('dayoverview').textContent = `Oversikt for ${fo}`
 
             // Update Total Time
-            document.getElementById('totaltime').textContent = `Total Tid:${detailedData.timespent}`
+            document.getElementById('totaltime').textContent = `Total Tid: ${detailedData.timespent}`
             // Update Pie
             chart2.series[0].update({data:detailedData.pie},redraw=true);
 
